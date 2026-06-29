@@ -8,6 +8,8 @@
 ## Текущие файлы
 - `docs/product/omnicorp-overview.md`
 - `docs/product/omnicorp-protocol.md`
+- `docs/product/art-direction.md`
+- `docs/product/real-tools-training-concept.md`
 - `docs/planning/1week.md`
 - `docs/planning/roadmap-first-4-weeks.md`
 - `docs/planning/omnicorp-bridge-plan-2027.md`

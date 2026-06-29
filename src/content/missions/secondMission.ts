@@ -2,6 +2,7 @@ import type { TrainingMission } from '../../shared/types';
 
 export const secondMission = {
   id: 'mission_cookie_flags',
+  mode: 'training',
   titleKey: 'mission.second.title',
   descriptionKey: 'mission.second.description',
   objectiveKey: 'mission.second.objective',
@@ -36,4 +37,3 @@ export const secondMission = {
   ],
   correctChoiceId: 'secure_session',
 } satisfies TrainingMission;
-
