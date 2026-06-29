@@ -1,14 +1,26 @@
 import { Application, Container, Graphics } from 'pixi.js';
 import type { GameState } from '../../core/gameState';
-import { completeFirstMission, isFirstMissionCompleted } from '../../core/missions/firstMissionLogic';
+import { completeMission } from '../../core/missionProgress';
 import { firstMission } from '../../content/missions/firstMission';
+import { missions } from '../../content/missions';
 import { getInputTokens, isDirectionPressed, isGameInput, type KeyHandler } from '../../platform/web/input';
 import { getCenter, isNear } from '../../shared/geometry';
-import type { TranslationTable } from '../../shared/types';
+import type { TrainingMission, TranslationTable } from '../../shared/types';
 import { createText } from '../pixiText';
+import { createButton, createPlayer, createTerminal, createTrainingRoom } from '../sceneFactories';
 
 function text(table: TranslationTable, key: string): string {
   return table[key] ?? key;
+}
+
+function getChoicesText(mission: TrainingMission, table: TranslationTable): string {
+  return mission.choices
+    .map((choice, index) => `${index + 1}. ${text(table, choice.labelKey)}`)
+    .join('\n');
+}
+
+function getSelectedChoiceId(mission: TrainingMission, keys: Set<string>): string | null {
+  return mission.choices.find((choice) => keys.has(choice.answerToken))?.id ?? null;
 }
 
 export function mountPrototypeScene(
@@ -18,34 +30,50 @@ export function mountPrototypeScene(
   onStateChange: (nextState: GameState) => void,
 ): () => void {
   let currentState = state;
+  let activeMission: TrainingMission = missions.find((mission) => !state.completedMissions.includes(mission.id)) ?? firstMission;
   let terminalOpen = false;
   const scene = new Container();
   app.stage.addChild(scene);
 
-  const background = new Graphics()
-    .rect(0, 0, 320, 180)
-    .fill({ color: 0x17213a });
-  background.position.set(40, 40);
-  scene.addChild(background);
+  const worldX = 32;
+  const worldY = 32;
+  const worldWidth = 336;
+  const worldHeight = 240;
 
-  const player = new Graphics()
-    .rect(0, 0, 28, 28)
-    .fill({ color: 0x8fd3ff });
+  const room = createTrainingRoom({
+    x: worldX,
+    y: worldY,
+    width: worldWidth,
+    height: worldHeight,
+  });
+  scene.addChild(room);
+
+  const player = createPlayer();
   player.position.set(120, 110);
   scene.addChild(player);
 
-  const terminal = new Graphics()
-    .roundRect(0, 0, 42, 34, 4)
-    .fill({ color: 0x203d2b })
-    .stroke({ color: 0x8df0a4, width: 2 });
-  terminal.position.set(285, 112);
-  scene.addChild(terminal);
+  const firstTerminal = createTerminal({
+    x: 285,
+    y: 104,
+    label: 'HTTP',
+    bodyColor: 0x16291f,
+    accentColor: 0x8df0a4,
+  });
+  scene.addChild(firstTerminal);
 
-  const terminalScreen = new Graphics()
-    .rect(0, 0, 24, 10)
-    .fill({ color: 0x8df0a4 });
-  terminalScreen.position.set(294, 120);
-  scene.addChild(terminalScreen);
+  const secondTerminal = createTerminal({
+    x: 88,
+    y: 188,
+    label: 'COOKIE',
+    bodyColor: 0x2b2535,
+    accentColor: 0xffd166,
+  });
+  scene.addChild(secondTerminal);
+
+  const terminalNodes = [
+    { mission: firstMission, body: firstTerminal },
+    { mission: missions[1], body: secondTerminal },
+  ] as const;
 
   const panelX = 400;
   const panelY = 40;
@@ -53,7 +81,7 @@ export function mountPrototypeScene(
   const panelTextWidth = 250;
 
   const missionConsole = new Graphics()
-    .roundRect(0, 0, 290, 300, 8)
+    .roundRect(0, 0, 290, 360, 8)
     .fill({ color: 0x0f1628 });
   missionConsole.position.set(panelX, panelY);
   scene.addChild(missionConsole);
@@ -78,7 +106,7 @@ export function mountPrototypeScene(
   scene.addChild(subtitle);
 
   const missionLabel = createText({
-    text: `${text(table, 'app.mission_label')}: ${text(table, firstMission.titleKey)}`,
+    text: `${text(table, 'app.mission_label')}: ${text(table, activeMission.titleKey)}`,
     fill: '#f4f7fb',
     fontSize: 16,
     fontWeight: '600',
@@ -88,7 +116,7 @@ export function mountPrototypeScene(
   scene.addChild(missionLabel);
 
   const missionDescription = createText({
-    text: text(table, firstMission.descriptionKey),
+    text: text(table, activeMission.descriptionKey),
     fill: '#c7d4ea',
     fontSize: 13,
     wordWrapWidth: panelTextWidth,
@@ -97,23 +125,52 @@ export function mountPrototypeScene(
   scene.addChild(missionDescription);
 
   const objective = createText({
-    text: text(table, firstMission.objectiveKey),
+    text: text(table, activeMission.objectiveKey),
     fill: '#ffffff',
-    fontSize: 13,
+    fontSize: 12,
     wordWrapWidth: panelTextWidth,
   });
-  objective.position.set(panelX + panelPadding, panelY + 165);
+  objective.position.set(panelX + panelPadding, panelY + 162);
   scene.addChild(objective);
 
   const responseText = createText({
-    text: text(table, 'mission.first.terminal_locked'),
+    text: text(table, activeMission.terminalLockedKey),
     fill: '#8df0a4',
     fontFamily: 'monospace',
-    fontSize: 11,
+    fontSize: 10,
     wordWrapWidth: panelTextWidth,
   });
-  responseText.position.set(panelX + panelPadding, panelY + 220);
+  responseText.position.set(panelX + panelPadding, panelY + 250);
   scene.addChild(responseText);
+
+  const layoutPanelText = () => {
+    const gap = 12;
+    missionDescription.position.set(panelX + panelPadding, missionLabel.y + missionLabel.height + gap);
+    objective.position.set(panelX + panelPadding, missionDescription.y + missionDescription.height + gap);
+    responseText.position.set(panelX + panelPadding, objective.y + objective.height + gap);
+  };
+
+  layoutPanelText();
+
+  const isMissionCompleted = (mission: TrainingMission) => currentState.completedMissions.includes(mission.id);
+
+  const renderMissionIntro = (mission: TrainingMission, responseKey = mission.terminalLockedKey) => {
+    activeMission = mission;
+    missionLabel.text = `${text(table, 'app.mission_label')}: ${text(table, mission.titleKey)}`;
+    missionDescription.text = text(table, mission.descriptionKey);
+    objective.text = text(table, mission.objectiveKey);
+    responseText.text = text(table, responseKey);
+    layoutPanelText();
+  };
+
+  const renderCompletedMission = (mission: TrainingMission) => {
+    activeMission = mission;
+    missionLabel.text = `${text(table, 'app.mission_label')}: ${text(table, mission.titleKey)}`;
+    missionDescription.text = text(table, mission.descriptionKey);
+    objective.text = `${text(table, mission.completedKey)}\n\n${text(table, mission.remediationKey)}`;
+    responseText.text = text(table, mission.completedReportKey);
+    layoutPanelText();
+  };
 
   const hintMove = createText({
     text: text(table, 'ui.hint.move'),
@@ -131,58 +188,73 @@ export function mountPrototypeScene(
   hintInteract.position.set(40, 345);
   scene.addChild(hintInteract);
 
-  const resetButton = new Container();
-  resetButton.position.set(40, 375);
-  resetButton.eventMode = 'static';
-  resetButton.cursor = 'pointer';
-  scene.addChild(resetButton);
-
-  const resetButtonBackground = new Graphics()
-    .roundRect(0, 0, 150, 30, 6)
-    .fill({ color: 0x1b2a45 })
-    .stroke({ color: 0x6687bd, width: 1 });
-  resetButton.addChild(resetButtonBackground);
-
-  const resetButtonLabel = createText({
-    text: text(table, 'ui.reset_progress'),
-    fill: '#d9e6ff',
+  const missionStatus = createText({
+    text: '',
+    fill: '#c7d4ea',
     fontSize: 12,
+    wordWrapWidth: 320,
   });
-  resetButtonLabel.position.set(12, 8);
-  resetButton.addChild(resetButtonLabel);
+  const statusPanel = new Graphics()
+    .roundRect(0, 0, 336, 58, 6)
+    .fill({ color: 0x0f1628 })
+    .stroke({ color: 0x2c405d, width: 1 });
+  statusPanel.position.set(32, 286);
+  scene.addChild(statusPanel);
+
+  missionStatus.position.set(46, 296);
+  scene.addChild(missionStatus);
+
+  const renderMissionStatus = () => {
+    missionStatus.text = [
+      text(table, 'ui.mission_status'),
+      ...missions.map((mission) => {
+        const statusKey = isMissionCompleted(mission) ? 'ui.status_done' : 'ui.status_todo';
+        return `${text(table, statusKey)} - ${text(table, mission.titleKey)}`;
+      }),
+    ].join('\n');
+  };
+
+  const resetButton = createButton({
+    label: text(table, 'ui.reset_progress'),
+    width: 150,
+    height: 30,
+  });
+  resetButton.position.set(32, 360);
+  scene.addChild(resetButton);
 
   const renderInitialMission = () => {
     terminalOpen = false;
-    objective.text = text(table, firstMission.objectiveKey);
-    responseText.text = text(table, 'mission.first.terminal_locked');
-  };
-
-  const renderCompletedMission = () => {
-    objective.text = text(table, 'mission.first.completed');
-    responseText.text = text(table, 'mission.first.report_completed');
+    const nextMission = missions.find((mission) => !currentState.completedMissions.includes(mission.id)) ?? firstMission;
+    renderMissionIntro(nextMission);
   };
 
   const resetProgress = () => {
     currentState = {
       ...currentState,
       activeMissionId: firstMission.id,
-      completedMissions: currentState.completedMissions.filter((id) => id !== firstMission.id),
+      completedMissions: [],
     };
     onStateChange(currentState);
+    renderMissionStatus();
     renderInitialMission();
   };
 
   resetButton.on('pointertap', resetProgress);
 
   const saveCompletedMission = () => {
-    currentState = completeFirstMission(currentState);
+    currentState = completeMission(currentState, activeMission.id);
     onStateChange(currentState);
-    renderCompletedMission();
+    renderMissionStatus();
+    renderCompletedMission(activeMission);
   };
 
-  if (isFirstMissionCompleted(currentState)) {
-    renderCompletedMission();
+  renderMissionStatus();
+
+  if (isMissionCompleted(activeMission)) {
+    renderCompletedMission(activeMission);
   }
+
+  const getNearestTerminal = () => terminalNodes.find((terminalNode) => isNear(getCenter(player), getCenter(terminalNode.body), 90)) ?? null;
 
   const keys = new Set<string>();
   const speed = 2.8;
@@ -197,32 +269,41 @@ export function mountPrototypeScene(
       event.preventDefault();
     }
 
-    if (terminalOpen && !isFirstMissionCompleted(currentState)) {
-      if (keys.has('answer:3')) {
+    if (terminalOpen && !isMissionCompleted(activeMission)) {
+      const selectedChoiceId = getSelectedChoiceId(activeMission, keys);
+      if (selectedChoiceId === activeMission.correctChoiceId) {
         saveCompletedMission();
         return;
       }
 
-      if (keys.has('answer:1') || keys.has('answer:2') || keys.has('answer:4')) {
-        objective.text = text(table, 'mission.first.wrong');
+      if (selectedChoiceId !== null) {
+        objective.text = text(table, activeMission.wrongAnswerKey);
+        layoutPanelText();
         return;
       }
     }
 
     if (keys.has('interact')) {
-      if (isFirstMissionCompleted(currentState)) {
-        renderCompletedMission();
+      const nearestTerminal = getNearestTerminal();
+
+      if (nearestTerminal === null) {
+        responseText.text = text(table, activeMission.terminalLockedKey);
+        layoutPanelText();
         return;
       }
 
-      if (!isNear(getCenter(player), getCenter(terminal), 90)) {
-        responseText.text = text(table, 'mission.first.terminal_locked');
+      activeMission = nearestTerminal.mission;
+
+      if (isMissionCompleted(activeMission)) {
+        renderCompletedMission(activeMission);
         return;
       }
 
       terminalOpen = true;
-      objective.text = text(table, 'mission.first.choose_header');
-      responseText.text = text(table, 'mission.first.report');
+      renderMissionIntro(activeMission);
+      objective.text = text(table, activeMission.choicesPromptKey);
+      responseText.text = getChoicesText(activeMission, table);
+      layoutPanelText();
     }
   };
 
@@ -253,13 +334,20 @@ export function mountPrototypeScene(
     if (isDirectionPressed(keys, 'left')) dx -= speed;
     if (isDirectionPressed(keys, 'right')) dx += speed;
 
-    player.x = Math.max(48, Math.min(360, player.x + dx));
-    player.y = Math.max(48, Math.min(220, player.y + dy));
+    player.x = Math.max(worldX + 8, Math.min(worldX + worldWidth - 40, player.x + dx));
+    player.y = Math.max(worldY + 8, Math.min(worldY + worldHeight - 54, player.y + dy));
 
-    if (!terminalOpen && !isFirstMissionCompleted(currentState)) {
-      responseText.text = isNear(getCenter(player), getCenter(terminal), 90)
-        ? text(table, 'mission.first.near_terminal')
-        : text(table, 'mission.first.terminal_locked');
+    if (!terminalOpen) {
+      const nearestTerminal = getNearestTerminal();
+      if (nearestTerminal !== null && nearestTerminal.mission.id !== activeMission.id) {
+        renderMissionIntro(nearestTerminal.mission, nearestTerminal.mission.nearTerminalKey);
+      } else if (nearestTerminal !== null && !isMissionCompleted(nearestTerminal.mission)) {
+        responseText.text = text(table, nearestTerminal.mission.nearTerminalKey);
+        layoutPanelText();
+      } else if (nearestTerminal === null && !isMissionCompleted(activeMission)) {
+        responseText.text = text(table, activeMission.terminalLockedKey);
+        layoutPanelText();
+      }
     }
   };
 
