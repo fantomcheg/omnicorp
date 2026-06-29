@@ -1,0 +1,22 @@
+{
+  "app.title": "OmniCorp",
+  "app.subtitle": "Тренажер безопасной разработки",
+  "app.mission_label": "Миссия",
+  "mission.first.title": "Прочитай запрос",
+  "mission.first.description": "Сервисный терминал показывает ответ внутреннего учебного приложения.",
+  "mission.first.objective": "Дойди до терминала и осмотри заголовки ответа.",
+  "mission.first.near_terminal": "Нажми E, чтобы осмотреть терминал",
+  "mission.first.terminal_locked": "Подойди ближе к терминалу",
+  "mission.first.choose_header": "Выбери подозрительный заголовок: нажми 1-4",
+  "mission.first.wrong": "Этот заголовок не является проблемой. Попробуй другой.",
+  "mission.first.completed": "Подозрительный заголовок найден: X-Debug-Token",
+  "mission.first.report": "1. Content-Type: text/html\n2. Set-Cookie: session=demo; HttpOnly\n3. X-Debug-Token: dev-admin-override\n4. Cache-Control: no-store",
+  "mission.first.report_completed": "HTTP/1.1 200 OK\nContent-Type: text/html\nSet-Cookie: session=demo; HttpOnly\nX-Debug-Token: dev-admin-override\nCache-Control: no-store",
+  "ui.language": "Язык",
+  "ui.language.en": "Английский",
+  "ui.language.ru": "Русский",
+  "ui.hint.move": "Двигайся с помощью WASD или стрелок",
+  "ui.hint.interact": "Нажми E, чтобы осмотреть объект",
+  "ui.mission.completed": "Миссия выполнена",
+  "ui.reset_progress": "Сбросить прогресс"
+}

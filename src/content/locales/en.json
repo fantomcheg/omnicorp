@@ -1,0 +1,22 @@
+{
+  "app.title": "OmniCorp",
+  "app.subtitle": "Secure development training simulator",
+  "app.mission_label": "Mission",
+  "mission.first.title": "Read the request",
+  "mission.first.description": "A service console shows a response from an internal training app.",
+  "mission.first.objective": "Reach the terminal and inspect the response headers.",
+  "mission.first.near_terminal": "Press E to inspect the terminal",
+  "mission.first.terminal_locked": "Move closer to the terminal",
+  "mission.first.choose_header": "Choose the suspicious header: press 1-4",
+  "mission.first.wrong": "This header is not the issue. Try another one.",
+  "mission.first.completed": "Suspicious header found: X-Debug-Token",
+  "mission.first.report": "1. Content-Type: text/html\n2. Set-Cookie: session=demo; HttpOnly\n3. X-Debug-Token: dev-admin-override\n4. Cache-Control: no-store",
+  "mission.first.report_completed": "HTTP/1.1 200 OK\nContent-Type: text/html\nSet-Cookie: session=demo; HttpOnly\nX-Debug-Token: dev-admin-override\nCache-Control: no-store",
+  "ui.language": "Language",
+  "ui.language.en": "English",
+  "ui.language.ru": "Russian",
+  "ui.hint.move": "Move with WASD or arrow keys",
+  "ui.hint.interact": "Press E to inspect the object",
+  "ui.mission.completed": "Mission completed",
+  "ui.reset_progress": "Reset Progress"
+}
