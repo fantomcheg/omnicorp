@@ -3,6 +3,7 @@ import type { TrainingMission } from '../../shared/types';
 export const secondMission = {
   id: 'mission_cookie_flags',
   mode: 'training',
+  proofType: 'choice',
   titleKey: 'mission.second.title',
   descriptionKey: 'mission.second.description',
   objectiveKey: 'mission.second.objective',

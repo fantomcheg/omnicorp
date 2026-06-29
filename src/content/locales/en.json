@@ -30,6 +30,16 @@
   "mission.second.choice.theme_cookie": "Set-Cookie: theme=dark",
   "mission.second.remediation": "Session cookies should use HttpOnly to reduce script access, Secure to require HTTPS, and SameSite to reduce cross-site request abuse.",
   "mission.second.report_completed": "Result\nBest option: HttpOnly; Secure; SameSite=Lax\nRisk: weak session cookies are easier to steal or abuse\nFix: set defensive flags on session cookies",
+  "mission.real_idor.title": "IDOR: Employee Profile",
+  "mission.real_idor.description": "Real Mode placeholder. The future lab will expose an employee profile endpoint.",
+  "mission.real_idor.objective": "Use real tools to obtain proof from another employee profile.",
+  "mission.real_idor.near_terminal": "Real Mode lab is not wired yet",
+  "mission.real_idor.terminal_locked": "Future Real Mode lab: http://localhost:3001/profile?id=1001",
+  "mission.real_idor.proof_prompt": "Goal: obtain proof from another employee profile and submit it here.",
+  "mission.real_idor.wrong": "Proof is invalid.",
+  "mission.real_idor.completed": "IDOR proof accepted",
+  "mission.real_idor.remediation": "Access control must verify that the authenticated user can access the requested object, not just that the object exists.",
+  "mission.real_idor.report_completed": "Result\nProof: accepted\nRisk: object-level authorization bypass\nFix: enforce per-object authorization checks",
   "ui.language": "Language",
   "ui.language.en": "English",
   "ui.language.ru": "Russian",
@@ -39,5 +49,7 @@
   "ui.reset_progress": "Reset Progress",
   "ui.mission_status": "Mission status",
   "ui.status_done": "DONE",
-  "ui.status_todo": "TODO"
+  "ui.status_todo": "TODO",
+  "ui.mode.training": "TRAINING",
+  "ui.mode.real": "REAL"
 }

@@ -3,6 +3,7 @@ import type { TrainingMission } from '../../shared/types';
 export const firstMission = {
   id: 'mission_http_intro',
   mode: 'training',
+  proofType: 'choice',
   titleKey: 'mission.first.title',
   descriptionKey: 'mission.first.description',
   objectiveKey: 'mission.first.objective',

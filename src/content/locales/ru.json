@@ -30,6 +30,16 @@
   "mission.second.choice.theme_cookie": "Set-Cookie: theme=dark",
   "mission.second.remediation": "Session cookie должен использовать HttpOnly против доступа из скриптов, Secure для HTTPS и SameSite для снижения риска cross-site abuse.",
   "mission.second.report_completed": "Результат\nЛучший вариант: HttpOnly; Secure; SameSite=Lax\nРиск: слабые session cookie проще украсть или использовать\nИсправление: ставить защитные флаги на session cookie",
+  "mission.real_idor.title": "IDOR: профиль сотрудника",
+  "mission.real_idor.description": "Real Mode placeholder. Будущая лаборатория даст endpoint профиля сотрудника.",
+  "mission.real_idor.objective": "Используй реальные инструменты, чтобы получить proof из чужого профиля сотрудника.",
+  "mission.real_idor.near_terminal": "Real Mode лаборатория пока не подключена",
+  "mission.real_idor.terminal_locked": "Будущая Real Mode лаборатория: http://localhost:3001/profile?id=1001",
+  "mission.real_idor.proof_prompt": "Цель: получи proof из чужого профиля сотрудника и отправь его здесь.",
+  "mission.real_idor.wrong": "Proof неверный.",
+  "mission.real_idor.completed": "IDOR proof принят",
+  "mission.real_idor.remediation": "Access control должен проверять, что пользователь имеет доступ к конкретному объекту, а не только что объект существует.",
+  "mission.real_idor.report_completed": "Результат\nProof: принят\nРиск: обход object-level authorization\nИсправление: проверять авторизацию на каждый объект",
   "ui.language": "Язык",
   "ui.language.en": "Английский",
   "ui.language.ru": "Русский",
@@ -39,5 +49,7 @@
   "ui.reset_progress": "Сбросить прогресс",
   "ui.mission_status": "Статус миссий",
   "ui.status_done": "ГОТОВО",
-  "ui.status_todo": "НУЖНО"
+  "ui.status_todo": "НУЖНО",
+  "ui.mode.training": "TRAINING",
+  "ui.mode.real": "REAL"
 }

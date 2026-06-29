@@ -195,7 +195,7 @@ export function mountPrototypeScene(
     wordWrapWidth: 320,
   });
   const statusPanel = new Graphics()
-    .roundRect(0, 0, 336, 58, 6)
+    .roundRect(0, 0, 336, 76, 6)
     .fill({ color: 0x0f1628 })
     .stroke({ color: 0x2c405d, width: 1 });
   statusPanel.position.set(32, 286);
@@ -209,7 +209,7 @@ export function mountPrototypeScene(
       text(table, 'ui.mission_status'),
       ...missions.map((mission) => {
         const statusKey = isMissionCompleted(mission) ? 'ui.status_done' : 'ui.status_todo';
-        return `${text(table, statusKey)} - ${text(table, mission.titleKey)}`;
+        return `${text(table, statusKey)} [${text(table, `ui.mode.${mission.mode}`)}] - ${text(table, mission.titleKey)}`;
       }),
     ].join('\n');
   };
@@ -219,7 +219,7 @@ export function mountPrototypeScene(
     width: 150,
     height: 30,
   });
-  resetButton.position.set(32, 360);
+  resetButton.position.set(32, 380);
   scene.addChild(resetButton);
 
   const renderInitialMission = () => {

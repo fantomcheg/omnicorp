@@ -3,6 +3,7 @@ export type Locale = 'en' | 'ru';
 export type TranslationTable = Record<string, string>;
 
 export type MissionMode = 'training' | 'real';
+export type ProofType = 'choice' | 'flag';
 
 export interface MissionChoice {
   id: string;
@@ -13,6 +14,7 @@ export interface MissionChoice {
 export interface TrainingMission {
   id: string;
   mode: MissionMode;
+  proofType: ProofType;
   titleKey: string;
   descriptionKey: string;
   objectiveKey: string;
@@ -25,4 +27,7 @@ export interface TrainingMission {
   completedReportKey: string;
   choices: MissionChoice[];
   correctChoiceId: string;
+  serviceUrl?: string;
+  proofPromptKey?: string;
+  expectedProof?: string;
 }
